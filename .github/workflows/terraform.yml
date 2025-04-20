@@ -39,4 +39,8 @@ jobs:
           terraform_wrapper: false
 
       - run: terraform init
-      - run: terraform apply -auto-approve -no-color
+      - run: terraform plan
+      - run: terraform apply -auto-approve -no-color \
+            -var="supabase_access_token=${{ secrets.SUPABASE_ACCESS_TOKEN }}" \
+            -var="org_id=${{ secrets.SUPABASE_ORG_ID }}" \
+            -var="db_password=${{ secrets.SUPABASE_DB_PASSWORD }}"
