@@ -12,6 +12,8 @@ jobs:
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       TF_VAR_linked_project: ${{ secrets.PRODUCTION_PROJECT_ID }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.PRODUCTION_DB_PASSWORD }}
+
     defaults:
       run:
         working-directory: supabase/remotes
@@ -29,18 +31,9 @@ jobs:
         run: |
           echo "SUPABASE_PROJECT_ID=$(terraform output -raw supabase_project_id)" >> ${{ github.env }}
 
-  migrate:
-    runs-on: ubuntu-latest
-    needs: apply
-    env:
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.PRODUCTION_DB_PASSWORD }}
-
-    steps:
-      - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
         with:
           version: latest
 
-      - run: supabase link --project-ref $SUPABASE_PROJECT_ID
+      - run: supabase link --project-ref "$(terraform output -raw supabase_project_id)"
       - run: supabase db push
