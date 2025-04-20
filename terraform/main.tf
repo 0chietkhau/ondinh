@@ -12,14 +12,8 @@ provider "supabase" {
 }
 
 resource "supabase_project" "ledger" {
-  name            = var.project_name
-  organization_id = var.org_id
-  password        = var.db_password
-  region          = "us-east-1"
-}
-
-resource "supabase_migration" "ledger_schema" {
-  project_id = supabase_project.ledger.id
-  name       = "init-ledger-schema"
-  sql        = file("${path.module}/schema.sql")
+  name              = var.project_name
+  organization_id   = var.org_id
+  database_password = var.db_password
+  region            = "us-east-1"
 }
