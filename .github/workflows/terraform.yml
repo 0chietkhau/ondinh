@@ -1,43 +1,42 @@
-name: Deploy Supabase Ledger
+name: Release (Production)
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  deploy:
-    name: Terraform Apply
+  migrate:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: ./terraform
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.PRODUCTION_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.PRODUCTION_PROJECT_ID }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
         with:
-          terraform_version: 1.11.4 # or your version
+          version: latest
 
-      - name: Terraform Init
-        run: terraform init
+      - run: supabase link --project-ref $SUPABASE_PROJECT_ID
+      - run: supabase db push
 
-      - name: Terraform Validate
-        run: terraform validate
+  apply:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      TF_VAR_linked_project: ${{ secrets.PRODUCTION_PROJECT_ID }}
+    defaults:
+      run:
+        working-directory: supabase/remotes
 
-      - name: Terraform Plan
-        run: |
-          terraform plan \
-            -var="supabase_access_token=${{ secrets.SUPABASE_ACCESS_TOKEN }}" \
-            -var="org_id=${{ secrets.SUPABASE_ORG_ID }}" \
-            -var="db_password=${{ secrets.SUPABASE_DB_PASSWORD }}"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
 
-      - name: Terraform Apply
-        run: |
-          terraform apply -auto-approve \
-            -var="supabase_access_token=${{ secrets.SUPABASE_ACCESS_TOKEN }}" \
-            -var="org_id=${{ secrets.SUPABASE_ORG_ID }}" \
-            -var="db_password=${{ secrets.SUPABASE_DB_PASSWORD }}"
+      - run: terraform init
+      - run: terraform apply -auto-approve -no-color
