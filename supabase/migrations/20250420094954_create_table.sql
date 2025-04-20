@@ -20,7 +20,8 @@ CREATE TABLE transaction_outputs (
     output_index INTEGER,
     amount BIGINT,
     recipient_address VARCHAR,
-    spent BOOLEAN DEFAULT FALSE
+    spent BOOLEAN DEFAULT FALSE,
+    UNIQUE (txid, output_index)
 );
 
 CREATE TABLE transaction_inputs (
@@ -31,4 +32,3 @@ CREATE TABLE transaction_inputs (
     prev_output_index INTEGER,
     FOREIGN KEY (prev_txid, prev_output_index) REFERENCES transaction_outputs(txid, output_index)
 );
-
