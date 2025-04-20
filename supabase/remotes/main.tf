@@ -14,6 +14,10 @@ terraform {
       source  = "supabase/supabase"
       version = "1.5.1"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "3.5.1"
+    }
   }
 }
 
@@ -21,8 +25,12 @@ provider "supabase" {
   access_token = var.supabase_access_token
 }
 
+resource "random_id" "project_suffix" {
+  byte_length = 4
+}
+
 resource "supabase_project" "ledger" {
-  name              = var.project_name
+  name              = "${var.project_name}-${random_id.project_suffix.hex}"
   organization_id   = var.org_id
   database_password = var.db_password
   region            = "us-east-1"
