@@ -26,5 +26,5 @@ jobs:
         with:
           version: latest
 
-      - run: supabase link --project-ref "$(terraform output -raw supabase_project_id)"
+      - run: supabase link --project-ref "$(terraform -chdir=./supabase/remotes/ output -raw supabase_project_id)"
       - run: supabase db push
